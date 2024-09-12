@@ -34,7 +34,6 @@ class UploadWorker:
 class UploadQueue:
     def __init__(self):
         self.ActiveUploadWorkers = []
-        self.poller = Thread(target=self.WorkerPoll, daemon=True).start()
 
     def CreateUploadWorker(self, id, local_file_path = None, target_file_path = None):
         worker = UploadWorker(id=id, local_file_path=local_file_path, target_file_path=target_file_path)
