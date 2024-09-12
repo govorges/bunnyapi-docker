@@ -1,0 +1,13 @@
+services:
+    bunnyapi-docker:
+        build: .
+        restart: always
+        volumes:
+          - type: bind
+            source: ./volume-mount
+            target: /home/app/uploads
+        ports:
+          - "5000:5000"
+        env_file:
+          - keys.env
+        command: gunicorn -w 3 -t 60 -b 0.0.0.0:5000 API:api

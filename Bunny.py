@@ -6,11 +6,11 @@ class BunnyHandler:
         self.bunny_StorageZone_API_Key = os.environ["BUNNY_STORAGEZONE_KEY"]
         self.bunny_Account_API_Key = os.environ["BUNNY_ACCOUNT_KEY"]
 
-        if os.getenv("BUNNY_STORAGEZONE") is not None and os.getenv("BUNNY_STORAGEZONE") != "":
-            self.bunny_Region = f'{os.environ["BUNNY_STORAGEZONE"]}.'
+        if os.getenv("BUNNY_STORAGEZONE") is not None and os.getenv("BUNNY_STORAGE_REGION") != "":
+            self.bunny_Region = f'{os.environ["BUNNY_STORAGE_REGION"]}.'
         else:
             self.bunny_Region = ""
-        self.bunny_StorageZoneName = "openbroadcast-public"
+        self.bunny_StorageZoneName = os.environ["BUNNY_STORAGEZONE_NAME"]
         self.bunny_StorageZoneEndpoint = "https://" + self.bunny_Region + "storage.bunnycdn.com" + "/" + self.bunny_StorageZoneName
 
         self.uploadreached = False
