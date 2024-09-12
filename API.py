@@ -43,9 +43,6 @@ class UploadWorker:
                 target_file_path = self.target_file_path,
                 content_type = "application/octet-stream"
             )
-            if ".xml" in self.target_file_path:
-                bunny.bunny_PurgeLinkCache(f"https://openbroadcast.b-cdn.net/{self.target_file_path}")
-
 
         self.time_end = time.time()
     
