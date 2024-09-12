@@ -53,8 +53,6 @@ class UploadWorker:
 class UploadQueue:
     def __init__(self):
         self.ActiveUploadWorkers = []
-        self.UploadStats = {}
-
         self.poller = Thread(target=self.WorkerPoll, daemon=True).start()
 
     def CreateUploadWorker(self, id, local_file_path = None, target_file_path = None):
@@ -68,10 +66,10 @@ class UploadQueue:
 
         for worker in self.ActiveUploadWorkers:
             if worker.id in fileNames: # Cleanup
-                self.UploadStats[worker.id] = {
-                    "time_start": worker.time_start,
-                    "time_end": worker.time_end
-                }
+                # TODO: POST {
+                #    "time_start": worker.time_start,
+                #    "time_end": worker.time_end
+                # } to track statistics
                 self.ActiveUploadWorkers.remove(worker)
                 del worker
 
@@ -109,18 +107,6 @@ def files_misc_upload_POST():
     uploadQueue.CreateUploadWorker(id = None, local_file_path=local_file_path, target_file_path=target_file_path)
 
     return make_response("Success", 200)
-
-
-@api.route("/files/upload", methods=["GET"])
-def files_upload_GET():
-    id = request.headers.get("id")
-    if id is None or id == "" or len(id) > 20:
-        return make_response("Header \"id\" is not set or is set incorrectly.", 400)
-
-    if uploadQueue.UploadStats.get(id) is None:
-        return make_response(f"ID \"{id}\" was not found in the upload stats. This is likely due to the upload worker being too old to remain cached.")
-
-    return jsonify(uploadQueue.UploadStats.get(id))
 
 @api.route("/files/list", methods=["GET"])
 def files_list():
