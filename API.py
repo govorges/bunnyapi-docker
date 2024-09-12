@@ -60,24 +60,6 @@ class UploadQueue:
         self.ActiveUploadWorkers.append(worker)
         worker.workerThread.start()
 
-    def CheckWorkerStatuses(self):
-        fileList = bunny.bunny_ListFiles("videos/")
-        fileNames = [x["ObjectName"].rsplit(".", 1)[0] for x in fileList]
-
-        for worker in self.ActiveUploadWorkers:
-            if worker.id in fileNames: # Cleanup
-                # TODO: POST {
-                #    "time_start": worker.time_start,
-                #    "time_end": worker.time_end
-                # } to track statistics
-                self.ActiveUploadWorkers.remove(worker)
-                del worker
-
-    def WorkerPoll(self):
-        while True:
-            time.sleep(300)
-            self.CheckWorkerStatuses()
-
 uploadQueue = UploadQueue()
 
 @api.route("/status", methods=["GET"])
