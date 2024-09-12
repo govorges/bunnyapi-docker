@@ -96,7 +96,7 @@ def files_list():
     if path == "" or len(path) > 30:
         return make_response("Header \"path\" is not set or is set incorrectly.", 400)
 
-    fileList = bunny.bunny_ListFiles("videos/")
+    fileList = bunny.bunny_ListFiles(path)
 
     return jsonify(fileList)
 
