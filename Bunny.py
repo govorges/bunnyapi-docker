@@ -64,6 +64,7 @@ class BunnyHandler:
     
     def bunny_GetFileData(self, target_file_path):
         folderData = self.bunny_ListFiles(target_file_path.rsplit("/", 1)[0])
+        fileData = {}
         for item in folderData:
             if item["ObjectName"] == target_file_path.rsplit('/', 1)[-1]:
                 fileData = item
