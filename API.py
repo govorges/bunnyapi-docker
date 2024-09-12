@@ -89,7 +89,7 @@ def files_retrieve():
     fileData = bunny.bunny_GetFileData(target_file_path=target_file_path)
     return jsonify(fileData)
 
-@api.route("/cache/purge", methods=["GET"])
+@api.route("/cache/purge", methods=["POST"])
 def cache_purge():
     target_url = request.args.get("url")
     if target_url is None or target_url == "":
