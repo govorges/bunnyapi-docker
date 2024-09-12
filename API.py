@@ -81,7 +81,7 @@ def files_delete():
 
     return make_response("Success", 200)
 
-@api.route("/files/retrieve", methods=["GET"])
+@api.route("/files/retrieve_metadata", methods=["GET"])
 def files_retrieve():
     target_file_path = request.headers.get("target-file-path")
     if target_file_path is None or target_file_path == "" or len(target_file_path) > 100:
