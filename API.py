@@ -84,7 +84,7 @@ uploadQueue = UploadQueue()
 
 @api.route("/status", methods=["GET"])
 def status():
-    return f"{str(uploadQueue.UploadStats)}"
+    return f"Alive!"
 
 @api.route("/files/upload", methods=["POST"])
 def files_upload_POST():
