@@ -6,7 +6,6 @@ RUN adduser nonroot
 RUN mkdir /home/app && chown -R nonroot:nonroot /home/app
 WORKDIR /home/app
 RUN mkdir /home/app/uploads
-RUN mkdir /home/app/uploads/xml
 RUN chown -R nonroot:nonroot /home/app/uploads
 USER nonroot
 
