@@ -2,7 +2,6 @@ from flask import Flask, request, make_response, jsonify
 from Bunny import BunnyHandler
 from os import path
 
-import time
 from threading import Thread
 
 HOME_DIR = path.dirname(path.realpath(__file__))
@@ -15,9 +14,6 @@ class UploadWorker:
     def __init__(self, local_file_path, target_file_path) -> None:
         self.local_file_path = local_file_path
         self.target_file_path = target_file_path
-
-        self.time_start = time.time()
-        self.time_end = None
         
         self.workerThread = Thread(target=self._target, daemon=True)
 
@@ -27,8 +23,6 @@ class UploadWorker:
             target_file_path = self.target_file_path,
             content_type = "application/octet-stream"
         )
-
-        self.time_end = time.time()
     
 
 class UploadQueue:
