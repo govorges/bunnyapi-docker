@@ -13,36 +13,21 @@ api = Flask(__name__)
 bunny = BunnyHandler()
 
 class UploadWorker:
-    def __init__(self, id, local_file_path = None, target_file_path = None) -> None:
-        self.id = id
+    def __init__(self, local_file_path, target_file_path) -> None:
         self.local_file_path = local_file_path
         self.target_file_path = target_file_path
+
         self.time_start = time.time()
         self.time_end = None
         
         self.workerThread = Thread(target=self._target, daemon=True)
 
     def _target(self):
-        if self.id is not None:
-            bunny.bunny_UploadFile(
-                local_file_path = path.join(UPLOAD_DIR, f"{self.id}.png"),
-                target_file_path = f"/videos/{self.id}.png",
-                content_type = "application/octet-stream"
-            )
-            remove(path.join(UPLOAD_DIR, f"{self.id}.png"))
-
-            bunny.bunny_UploadFile(
-                local_file_path = path.join(UPLOAD_DIR, f"{self.id}.mp4"),
-                target_file_path = f"/videos/{self.id}.mp4",
-                content_type = "application/octet-stream"
-            )
-            remove(path.join(UPLOAD_DIR, f"{self.id}.mp4"))
-        elif self.local_file_path is not None and self.target_file_path is not None:
-            bunny.bunny_UploadFile(
-                local_file_path = self.local_file_path,
-                target_file_path = self.target_file_path,
-                content_type = "application/octet-stream"
-            )
+        bunny.bunny_UploadFile(
+            local_file_path = self.local_file_path,
+            target_file_path = self.target_file_path,
+            content_type = "application/octet-stream"
+        )
 
         self.time_end = time.time()
     
@@ -64,16 +49,6 @@ def status():
     return f"Alive!"
 
 @api.route("/files/upload", methods=["POST"])
-def files_upload_POST():
-    id = request.headers.get("id")
-    if id is None or id == "" or len(id) > 20:
-        return make_response("Header \"id\" is not set or is set incorrectly.", 400)
-
-    uploadQueue.CreateUploadWorker(id=id)
-
-    return make_response("Video is queued to be uploaded.", 200)
-
-@api.route("/files/misc_upload", methods=["POST"])
 def files_misc_upload_POST():
     local_file_path = request.headers.get("local-file-path")
     if local_file_path is None or local_file_path == "":
@@ -83,7 +58,7 @@ def files_misc_upload_POST():
     if target_file_path is None or target_file_path == "":
         return make_response("Header \"target-file-path\" is not set or is set incorrectly.", 400)
     
-    uploadQueue.CreateUploadWorker(id = None, local_file_path=local_file_path, target_file_path=target_file_path)
+    uploadQueue.CreateUploadWorker(local_file_path=local_file_path, target_file_path=target_file_path)
 
     return make_response("Success", 200)
 
