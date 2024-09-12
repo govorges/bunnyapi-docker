@@ -4,7 +4,6 @@ from os import path
 
 import time
 from threading import Thread
-from os import remove
 
 HOME_DIR = path.dirname(path.realpath(__file__))
 UPLOAD_DIR = path.join(HOME_DIR, "uploads")
