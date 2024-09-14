@@ -29,8 +29,8 @@ class UploadQueue:
     def __init__(self):
         self.ActiveUploadWorkers = []
 
-    def CreateUploadWorker(self, id, local_file_path = None, target_file_path = None):
-        worker = UploadWorker(id=id, local_file_path=local_file_path, target_file_path=target_file_path)
+    def CreateUploadWorker(self, local_file_path = None, target_file_path = None):
+        worker = UploadWorker(local_file_path=local_file_path, target_file_path=target_file_path)
         self.ActiveUploadWorkers.append(worker)
         worker.workerThread.start()
 
