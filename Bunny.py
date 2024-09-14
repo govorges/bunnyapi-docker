@@ -33,6 +33,10 @@ class BunnyHandler:
             "Content-Type": content_type,
             "accept": "application/json",
         }
+        
+        if target_file_path[0] != "/":
+            target_file_path = f"/{target_file_path}"
+
         requestURL = self.bunny_StorageZoneEndpoint + target_file_path
         
         requests.put(requestURL, data=open(local_file_path, "rb"), headers=requestHeaders)
@@ -51,6 +55,10 @@ class BunnyHandler:
             "AccessKey": self.bunny_StorageZone_API_Key,
             "accept": "application/json"
         }
+
+        if target_file_path[0] != "/":
+            target_file_path = f"/{target_file_path}"
+
         requestURL = self.bunny_StorageZoneEndpoint + target_file_path
 
         requests.delete(requestURL, headers=requestHeaders)
@@ -63,6 +71,9 @@ class BunnyHandler:
         requests.post(requestURL, headers=requestHeaders)
     
     def bunny_GetFileData(self, target_file_path):
+        if target_file_path[0] != "/":
+            target_file_path = f"/{target_file_path}"
+            
         folderData = self.bunny_ListFiles(target_file_path.rsplit("/", 1)[0])
         fileData = {}
         for item in folderData:
