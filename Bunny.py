@@ -1,4 +1,6 @@
 import requests
+import hashlib
+import datetime
 import os
 
 class BunnyHandler:
@@ -13,7 +15,8 @@ class BunnyHandler:
         self.bunny_StorageZoneName = os.environ["BUNNY_STORAGEZONE_NAME"]
         self.bunny_StorageZoneEndpoint = "https://" + self.bunny_Region + "storage.bunnycdn.com" + "/" + self.bunny_StorageZoneName
 
-        self.uploadreached = False
+        self.bunny_StreamLibrary_ID = os.environ["BUNNY_STREAMLIBRARY_ID"]
+        self.bunny_StreamLibrary_Key = os.environ["BUNNY_STREAMLIBRARY_KEY"]
 
         if not self.bunny_ConnectionAlive():
             raise SystemError("Bunny connection has failed! (NOT AUTH RELATED)")
@@ -40,6 +43,7 @@ class BunnyHandler:
         requestURL = self.bunny_StorageZoneEndpoint + target_file_path
         
         requests.put(requestURL, data=open(local_file_path, "rb"), headers=requestHeaders)
+    
     def bunny_ListFiles(self, path: str):
         requestHeaders = {
             "AccessKey": self.bunny_StorageZone_API_Key,
@@ -82,3 +86,12 @@ class BunnyHandler:
                 break
 
         return fileData
+    
+    def bunny_GenerateTUSSignature(self, videoID):
+        '''Generates a pre-signed authentication signature for TUS (resumable uploads) used by Bunny's Stream API.'''
+        signature_library_id = self.bunny_StreamLibrary_ID
+        signature_expiration_time = (datetime.datetime.now() + datetime.timedelta(hours=2)).timetuple()
+        signature = hashlib.sha256((signature_library_id + self.bunny_StreamLibrary_Key + str(signature_expiration_time) + str(videoID)).encode())
+        
+        return (signature.hexdigest(), signature_expiration_time, signature_library_id)
+    
