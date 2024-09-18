@@ -92,3 +92,17 @@ def cache_purge():
     bunny.bunny_PurgeLinkCache(target_url)
 
     return make_response(f"Cache purge of {target_url} successful", 200)
+
+@api.route("/stream/create-signature", methods=["GET"])
+def upload_createSignature():
+    videoID = request.headers.get("videoID")
+    if videoID is None or videoID == "":
+        return make_response("Header \"videoID\" is not set or is set incorrectly.", 400)
+    
+    signature, signature_expiration_time, library_id = bunny.bunny_GenerateTUSSignature(videoID=videoID)
+    signatureData = {
+        "signature": signature,
+        "signature_expiration_time": signature_expiration_time,
+        "library_id": library_id 
+    }
+    return jsonify(signatureData)
