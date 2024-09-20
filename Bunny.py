@@ -99,7 +99,7 @@ class BunnyHandler:
         requestURL = f"https://video.bunnycdn.com/library/{self.bunny_StreamLibrary_ID}/videos"
 
         resp = requests.post(requestURL, headers=requestHeaders, json=requestData)
-        return resp
+        return resp.json()
     
     def bunny_GenerateTUSSignature(self, videoID):
         '''Generates a pre-signed authentication signature for TUS (resumable uploads) used by Bunny's Stream API.'''
