@@ -87,6 +87,20 @@ class BunnyHandler:
 
         return fileData
     
+    def bunny_CreateVideoInLibrary(self, title: str):
+        requestHeaders = {
+            "AccessKey": self.bunny_StreamLibrary_Key,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+        requestData = {
+            "title": title
+        }
+        requestURL = f"https://video.bunnycdn.com/library/{self.bunny_StreamLibrary_ID}/videos"
+
+        resp = requests.post(requestURL, headers=requestHeaders, json=requestData)
+        return resp
+    
     def bunny_GenerateTUSSignature(self, videoID):
         '''Generates a pre-signed authentication signature for TUS (resumable uploads) used by Bunny's Stream API.'''
         signature_library_id = self.bunny_StreamLibrary_ID

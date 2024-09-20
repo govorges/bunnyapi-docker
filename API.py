@@ -106,3 +106,12 @@ def upload_createSignature():
         "library_id": library_id 
     }
     return jsonify(signatureData)
+
+@api.route("/stream/create-video", methods=["GET"])
+def Stream_createVideo():
+    videoTitle = request.headers.get("title")
+    if videoTitle is None or videoTitle == "":
+        return make_response("Header \"title\" was not set or was set incorrectly.", 400)
+    
+    video = bunny.bunny_CreateVideoInLibrary(title=videoTitle)
+    return video
