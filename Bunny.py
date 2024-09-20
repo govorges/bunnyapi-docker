@@ -90,7 +90,7 @@ class BunnyHandler:
     def bunny_GenerateTUSSignature(self, videoID):
         '''Generates a pre-signed authentication signature for TUS (resumable uploads) used by Bunny's Stream API.'''
         signature_library_id = self.bunny_StreamLibrary_ID
-        signature_expiration_time = (datetime.datetime.now() + datetime.timedelta(hours=2)).timetuple()
+        signature_expiration_time = int((datetime.datetime.now() + datetime.timedelta(hours=2)).timestamp())
         signature = hashlib.sha256((signature_library_id + self.bunny_StreamLibrary_Key + str(signature_expiration_time) + str(videoID)).encode())
         
         return (signature.hexdigest(), signature_expiration_time, signature_library_id)
