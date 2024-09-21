@@ -115,3 +115,17 @@ def Stream_createVideo():
     
     video = bunny.bunny_CreateVideoInLibrary(title=videoTitle)
     return video
+
+@api.route("/stream/update-video", methods=["POST"])
+def Stream_updateVideo():
+    video_guid = request.headers.get("guid")
+    if video_guid is None or video_guid == "":
+        return make_response("Header \"guid\" was not set or was set incorrectly.", 400)
+    
+    payload = request.json
+    if payload is None or payload == "":
+        return make_response("JSON payload was not set or was set incorrectly.", 400)
+    
+    r = bunny.bunny_UpdateVideoInLibrary(guid=video_guid, payload=payload)
+
+    return make_response(r.text, 200)

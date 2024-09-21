@@ -109,3 +109,23 @@ class BunnyHandler:
         
         return (signature.hexdigest(), signature_expiration_time, signature_library_id)
     
+    def bunny_UpdateVideoInLibrary(self, guid: str, payload: dict):
+        validPayloadKeys = ['title', 'collectionId', 'chapters', 'moments', 'metaTags']
+
+        requestPayload = {}
+        for value in validPayloadKeys:
+            requestPayload[value] = payload.get(value)
+            if requestPayload[value] is None:
+                requestPayload.pop(value)
+        
+        requestURL = f"https://video.bunnycdn.com/library/{self.bunny_StreamLibrary_ID}/videos/{guid}"
+
+        requestHeaders = {
+            "AccessKey": self.bunny_StreamLibrary_Key,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+
+        r = requests.post(requestURL, json=requestPayload, headers=requestHeaders)
+
+        return r
