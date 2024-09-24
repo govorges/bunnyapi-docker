@@ -129,3 +129,13 @@ def Stream_updateVideo():
     r = bunny.bunny_UpdateVideoInLibrary(guid=video_guid, payload=payload)
 
     return make_response(r.text, 200)
+
+@api.route("/stream/retrieve-video", methods=["GET"])
+def Stream_retrieveVideo():
+    video_guid = request.headers.get("guid")
+    if video_guid is None or video_guid == "":
+        return make_response("Header \"guid\" was not set or was set incorrectly.", 400)
+    
+    videoData = bunny.bunny_RetrieveVideoInLibrary(video_guid)
+
+    return jsonify(videoData)

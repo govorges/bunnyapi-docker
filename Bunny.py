@@ -129,3 +129,14 @@ class BunnyHandler:
         r = requests.post(requestURL, json=requestPayload, headers=requestHeaders)
 
         return r
+
+    def bunny_RetrieveVideoInLibrary(self, guid: str):
+        requestHeaders = {
+            "AccessKey": self.bunny_StreamLibrary_Key,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+        requestURL = f"https://video.bunnycdn.com/library/{self.bunny_StreamLibrary_ID}/videos/{guid}"
+
+        r = requests.get(requestURL, headers=requestHeaders)
+        return r.json()
