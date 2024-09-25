@@ -30,7 +30,7 @@ class BunnyHandler:
         else:
             return False
 
-    def bunny_UploadFile(self, local_file_path, target_file_path, content_type):
+    def bunny_UploadFile(self, local_file_path, target_file_path, content_type, purge = True):
         requestHeaders = {
             "AccessKey": self.bunny_StorageZone_API_Key,
             "Content-Type": content_type,
@@ -43,7 +43,9 @@ class BunnyHandler:
         requestURL = self.bunny_StorageZoneEndpoint + target_file_path
         
         requests.put(requestURL, data=open(local_file_path, "rb"), headers=requestHeaders)
-        self.bunny_PurgeLinkCache(requestURL)
+        
+        if purge:
+            self.bunny_PurgeLinkCache(requestURL)
     
     def bunny_ListFiles(self, path: str):
         requestHeaders = {
