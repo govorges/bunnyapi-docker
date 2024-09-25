@@ -43,6 +43,7 @@ class BunnyHandler:
         requestURL = self.bunny_StorageZoneEndpoint + target_file_path
         
         requests.put(requestURL, data=open(local_file_path, "rb"), headers=requestHeaders)
+        self.bunny_PurgeLinkCache(requestURL)
     
     def bunny_ListFiles(self, path: str):
         requestHeaders = {
