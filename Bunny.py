@@ -18,6 +18,8 @@ class BunnyHandler:
         self.bunny_StreamLibrary_ID = os.environ["BUNNY_STREAMLIBRARY_ID"]
         self.bunny_StreamLibrary_Key = os.environ["BUNNY_STREAMLIBRARY_KEY"]
 
+        self.bunny_PullZoneRoot = os.environ["BUNNY_PULL_ZONE_ROOT"]
+
         if not self.bunny_ConnectionAlive():
             raise SystemError("Bunny connection has failed! (NOT AUTH RELATED)")
 
@@ -43,9 +45,9 @@ class BunnyHandler:
         requestURL = self.bunny_StorageZoneEndpoint + target_file_path
         
         requests.put(requestURL, data=open(local_file_path, "rb"), headers=requestHeaders)
-        
+
         if purge:
-            self.bunny_PurgeLinkCache(requestURL)
+            self.bunny_PurgeLinkCache(f"{self.bunny_PullZoneRoot}{target_file_path}")
     
     def bunny_ListFiles(self, path: str):
         requestHeaders = {
