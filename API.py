@@ -10,32 +10,6 @@ UPLOAD_DIR = path.join(HOME_DIR, "uploads")
 api = Flask(__name__)
 bunny = BunnyHandler()
 
-class UploadWorker:
-    def __init__(self, local_file_path, target_file_path) -> None:
-        self.local_file_path = local_file_path
-        self.target_file_path = target_file_path
-        
-        self.workerThread = Thread(target=self._target, daemon=True)
-
-    def _target(self):
-        bunny.bunny_UploadFile(
-            local_file_path = self.local_file_path,
-            target_file_path = self.target_file_path,
-            content_type = "application/octet-stream"
-        )
-    
-
-class UploadQueue:
-    def __init__(self):
-        self.ActiveUploadWorkers = []
-
-    def CreateUploadWorker(self, local_file_path = None, target_file_path = None):
-        worker = UploadWorker(local_file_path=local_file_path, target_file_path=target_file_path)
-        self.ActiveUploadWorkers.append(worker)
-        worker.workerThread.start()
-
-uploadQueue = UploadQueue()
-
 @api.route("/status", methods=["GET"])
 def status():
     return f"Alive!"
@@ -50,7 +24,14 @@ def files_misc_upload_POST():
     if target_file_path is None or target_file_path == "":
         return make_response("Header \"target-file-path\" is not set or is set incorrectly.", 400)
     
-    uploadQueue.CreateUploadWorker(local_file_path=local_file_path, target_file_path=target_file_path)
+    deleteLocal = request.headers.get("deleteLocal", False)
+
+    bunny.bunny_UploadFile(
+        local_file_path = local_file_path,
+        target_file_path = target_file_path,
+        content_type = "application/octet-stream",
+        deleteLocal = deleteLocal
+    )
 
     return make_response("Success", 200)
 

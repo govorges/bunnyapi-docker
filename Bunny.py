@@ -32,14 +32,14 @@ class BunnyHandler:
         else:
             return False
 
-    def bunny_UploadFile(self, local_file_path, target_file_path, content_type, purge = True):
+    def bunny_UploadFile(self, local_file_path, target_file_path, content_type, purge = True, deleteLocal = False):
         requestHeaders = {
             "AccessKey": self.bunny_StorageZone_API_Key,
             "Content-Type": content_type,
             "accept": "application/json",
         }
         
-        if target_file_path[0] != "/":
+        if target_file_path[0] != "/": # This + deleteLocal's logic can be a possibly dangerous combination if not cleaned properly.
             target_file_path = f"/{target_file_path}"
 
         requestURL = self.bunny_StorageZoneEndpoint + target_file_path
@@ -48,6 +48,14 @@ class BunnyHandler:
 
         if purge:
             self.bunny_PurgeLinkCache(f"{self.bunny_PullZoneRoot}{target_file_path}")
+
+        if deleteLocal: # local_file_path can be unsafe. verify file exists as a normal file before removing.
+            if os.path.isfile(local_file_path):
+                # local_file_path could still be escaping to critical directories
+                for str in ["..", ":", "<", ">", "\"", "|", "?", "*"]: 
+                    if str in local_file_path:
+                        return
+                os.remove(local_file_path)
     
     def bunny_ListFiles(self, path: str):
         requestHeaders = {
