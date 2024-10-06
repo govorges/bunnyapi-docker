@@ -167,7 +167,7 @@ class BunnyHandler:
             responseData["type"] == "SUCCESS"
             responseData["message"] = "File deletion succeeded."
             responseData["message_name"] = "file_deletion_success"
-            
+
         else:
             responseData["type"] = "FAIL"
             responseData["message"] = "File deletion failed."
@@ -185,17 +185,46 @@ class BunnyHandler:
         requests.post(requestURL, headers=requestHeaders)
     
     def bunny_GetFileData(self, target_file_path):
+        responseData = {
+            "type": None,
+            "message": None,
+            "message_name": None,
+            "status_code": None
+        }
+
         if target_file_path[0] != "/":
             target_file_path = f"/{target_file_path}"
             
-        folderData = self.bunny_ListFiles(target_file_path.rsplit("/", 1)[0])
+        file_list_response = self.bunny_ListFiles(target_file_path.rsplit("/", 1)[0])
+        file_list = file_list_response.get("object")
+        if file_list is None:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "File directory was empty, file not found."
+            responseData["message_name"] = "directory_empty_or_does_not_exist"
+            responseData["status_code"] = file_list_response.get("status_code", 400)
+
+            return responseData
+
         fileData = {}
-        for item in folderData:
+        for item in file_list:
             if item["ObjectName"] == target_file_path.rsplit('/', 1)[-1]:
                 fileData = item
                 break
+        
+        if fileData.get("ObjectName") is None:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "File not found in directory"
+            responseData["message_name"] = "file_not_found_in_directory"
+            responseData["status_code"] = 404
+        else:
+            responseData["type"] = "SUCCESS"
+            responseData["message"] = "File found successfully."
+            responseData["message_name"] = "file_found"
+            responseData["status_code"] = 200
+            
+            responseData["object"] = fileData
 
-        return fileData
+        return responseData
     
     def bunny_CreateVideoInLibrary(self, title: str):
         requestHeaders = {

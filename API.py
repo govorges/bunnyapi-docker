@@ -158,12 +158,31 @@ def files_delete():
 
 @api.route("/files/retrieve_metadata", methods=["GET"])
 def files_retrieve():
-    target_file_path = request.headers.get("target-file-path")
-    if target_file_path is None or target_file_path == "" or len(target_file_path) > 100:
-        return make_response("Header \"target-file-path\" is not set or is set incorrectly.", 400)
+    response_data = {
+        "type": None,
 
-    fileData = bunny.bunny_GetFileData(target_file_path=target_file_path)
-    return jsonify(fileData)
+        "message": None,
+        "message_name": None,
+
+        "route": "/files/retrieve_metadata",
+        "method": request.method,
+
+        "object": None
+    }
+    target_file_path = request.headers.get("target-file-path")
+    if target_file_path is None or target_file_path == "":
+        response_data["type"] = "FAIL"
+        response_data["message"] = "Header \"target_file_path\" is not set or is set incorrectly."
+        response_data["message_name"] = "target_file_path_missing"
+
+        return BuildHTTPResponse(**response_data, status_code=400)
+
+    response = bunny.bunny_GetFileData(target_file_path=target_file_path)
+
+    for key in response.keys():
+        response_data[key] = response[key]
+
+    return BuildHTTPResponse(**response_data)
 
 @api.route("/cache/purge", methods=["POST"])
 def cache_purge():
