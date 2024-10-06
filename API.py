@@ -214,9 +214,23 @@ def cache_purge():
 
 @api.route("/stream/create-signature", methods=["GET"])
 def upload_createSignature():
+    response_data = {
+        "type": None,
+
+        "message": None,
+        "message_name": None,
+
+        "route": "/stream/create-signature",
+        "method": request.method,
+
+        "object": None
+    }
+
     videoID = request.headers.get("videoID")
     if videoID is None or videoID == "":
-        return make_response("Header \"videoID\" is not set or is set incorrectly.", 400)
+        response_data["type"] = "FAIL"
+        response_data["message"] = "Header \"videoID\" is not set or is set incorrectly."
+        response_data["message_name"] = "video_id_missing"
     
     signature, signature_expiration_time, library_id = bunny.bunny_GenerateTUSSignature(videoID=videoID)
     signatureData = {
@@ -224,7 +238,13 @@ def upload_createSignature():
         "signature_expiration_time": signature_expiration_time,
         "library_id": library_id 
     }
-    return jsonify(signatureData)
+
+    response_data["type"] = "SUCCESS"
+    response_data["message"] = "TUS signature generated successfully."
+    response_data["message_name"] = "create_signature_success"
+    response_data["object"] = signatureData
+
+    return BuildHTTPResponse(**response_data)
 
 @api.route("/stream/create-video", methods=["GET"])
 def Stream_createVideo():
