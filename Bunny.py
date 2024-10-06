@@ -65,7 +65,7 @@ class BunnyHandler:
             responseData["message_name"] = "upload_failed"
         elif bunnyRequest.status_code == 401:
             responseData["type"] = "FAIL"
-            responseData["message"] = "Invalid AccessKey, region hostname, or file passed in a non raw binary format."
+            responseData["message"] = "Invalid authorization."
             responseData["message_name"] = "invalid_auth"
         responseData["status_code"] = bunnyRequest.status_code
 
@@ -132,7 +132,7 @@ class BunnyHandler:
 
         elif bunnyRequest.status_code == 401:
             responseData["type"] = "FAIL"
-            responseData["message"] = "Invalid authorization, file list not retrieved."
+            responseData["message"] = "Invalid authorization."
             responseData["message_name"] = "invalid_auth"
 
         else:
@@ -178,11 +178,36 @@ class BunnyHandler:
         return responseData
 
     def bunny_PurgeLinkCache(self, url):
+        responseData = {
+            "type": None,
+            "message": None,
+            "message_name": None,
+            "status_code": None
+        }
+
         requestHeaders = {
             "AccessKey": self.bunny_Account_API_Key
         }
-        requestURL = f"https://api.bunny.net/purge?url={url}"            
-        requests.post(requestURL, headers=requestHeaders)
+        requestURL = f"https://api.bunny.net/purge?url={url}"          
+
+        bunnyRequest = requests.post(requestURL, headers=requestHeaders)
+        if bunnyRequest.status_code == 200:
+            responseData["type"] == "SUCCESS"
+            responseData["message"] = f"Cache purged successfully for {url}."
+            responseData["message_name"] = "cache_purge_success"
+        elif bunnyRequest.status_code == 401:
+            responseData["type"] == "FAIL"
+            responseData["message"] = "Invalid authorization."
+            responseData["message_name"] = "invalid_auth"
+        elif bunnyRequest.status_code == 500:
+            responseData["type"] == "FAIL"
+            responseData["message"] = f"Cache not purged for {url}."
+            responseData["message_name"] = "cache_purge_fail"
+        
+        responseData["status_code"] = bunnyRequest.status_code
+
+        return responseData
+
     
     def bunny_GetFileData(self, target_file_path):
         responseData = {

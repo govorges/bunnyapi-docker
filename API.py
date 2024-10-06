@@ -186,13 +186,31 @@ def files_retrieve():
 
 @api.route("/cache/purge", methods=["POST"])
 def cache_purge():
+    response_data = {
+        "type": None,
+
+        "message": None,
+        "message_name": None,
+
+        "route": "/cache/purge",
+        "method": request.method,
+
+        "object": None
+    }
     target_url = request.args.get("url")
     if target_url is None or target_url == "":
-        return make_response("Argument \"url\" is not set or is set incorrectly.", 400)
-    
-    bunny.bunny_PurgeLinkCache(target_url)
+        response_data["type"] = "FAIL"
+        response_data["message"] = "Argument \"url\" is not set or is set incorrectly."
+        response_data["message_name"] = "target_file_path_missing"
 
-    return make_response(f"Cache purge of {target_url} successful", 200)
+        return BuildHTTPResponse(response_data, status_code=400)
+    
+    response = bunny.bunny_PurgeLinkCache(target_url)
+
+    for key in response.keys():
+        response_data[key] = response[key]
+
+    return BuildHTTPResponse(**response_data)
 
 @api.route("/stream/create-signature", methods=["GET"])
 def upload_createSignature():
