@@ -32,7 +32,14 @@ class BunnyHandler:
         else:
             return False
 
-    def bunny_UploadFile(self, local_file_path, target_file_path, content_type, purge = True, deleteLocal = False):
+    def bunny_UploadFile(self, local_file_path, target_file_path, content_type = "application/octet-stream", purge = True, deleteLocal = False):
+        responseData = {
+            "type": None,
+            "message": None,
+            "message_name": None,
+            "status_code": None
+        }
+
         requestHeaders = {
             "AccessKey": self.bunny_StorageZone_API_Key,
             "Content-Type": content_type,
@@ -44,19 +51,59 @@ class BunnyHandler:
 
         requestURL = self.bunny_StorageZoneEndpoint + target_file_path
         
-        requests.put(requestURL, data=open(local_file_path, "rb"), headers=requestHeaders)
+        # 201 -	The file was uploaded successfully.
+        # 400 - The file was uploaded unsuccessfully.
+        # 401 - Invalid AccessKey, region hostname, or file passed in a non raw binary format.
+        bunnyRequest = requests.put(requestURL, data=open(local_file_path, "rb"), headers=requestHeaders)
+        if bunnyRequest.status_code == 201:
+            responseData["type"] = "SUCCESS"
+            responseData["message"] = "The file was uploaded successfully."
+            responseData["message_name"] = "upload_success"
+        elif bunnyRequest.status_code == 400:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "The file was not uploaded."
+            responseData["message_name"] = "upload_failed"
+        elif bunnyRequest.status_code == 401:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "Invalid AccessKey, region hostname, or file passed in a non raw binary format."
+            responseData["message_name"] = "invalid_auth"
+        responseData["status_code"] = bunnyRequest.status_code
 
-        if purge:
-            self.bunny_PurgeLinkCache(f"{self.bunny_PullZoneRoot}{target_file_path}")
+        if bunnyRequest.status_code != 201:
+            return responseData
 
-        if deleteLocal: # local_file_path can be unsafe. verify file exists as a normal file before removing.
-            if os.path.isfile(local_file_path):
-                # local_file_path could still be escaping to critical directories
-                for str in ["..", ":", "<", ">", "\"", "|", "?", "*"]: 
-                    if str in local_file_path:
-                        return
-                os.remove(local_file_path)
-    
+        # Handling `purge` and `deleteLocal` before returning.
+        try:
+            if purge:
+                self.bunny_PurgeLinkCache(f"{self.bunny_PullZoneRoot}{target_file_path}")
+        except:
+            responseData["type"] = "WARN"
+            responseData["message"] = "File uploaded but link not successfully purged."
+            responseData["message_name"] = "upload_success_link_not_purged"
+            responseData["status_code"] = 400
+
+        try:
+            if deleteLocal: # local_file_path can be unsafe. verify file exists as a normal file before removing.
+                if os.path.isfile(local_file_path):
+                    # local_file_path could still be escaping to critical directories
+                    for str in ["..", ":", "<", ">", "\"", "|", "?", "*"]: 
+                        if str in local_file_path:
+                            raise ValueError("Invalid char in local_file_path")
+                    os.remove(local_file_path)
+        except ValueError:
+            if responseData["type"] != "WARN":
+                responseData["type"] = "WARN"
+                responseData["message"] = "File uploaded but local file was not successfully deleted. This is likely due to an invalid local_file_path value."
+                responseData["message_name"] = "upload_success_local_not_deleted"
+                responseData["status_code"] = 400
+            else: # Both the local deletion and the URL cache purge failed.
+                responseData["type"] = "WARN"
+                responseData["message"] = "File uploaded but local file not deleted and link not purged."
+                responseData["message_name"] = "upload_success_local_not_deleted_link_not_purged"
+                responseData["status_code"] = 400
+
+        return responseData
+
     def bunny_ListFiles(self, path: str):
         requestHeaders = {
             "AccessKey": self.bunny_StorageZone_API_Key,

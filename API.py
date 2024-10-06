@@ -1,8 +1,8 @@
 from flask import Flask, request, make_response, jsonify
 from Bunny import BunnyHandler
 from os import path
-
-from threading import Thread
+import json
+import datetime
 
 HOME_DIR = path.dirname(path.realpath(__file__))
 UPLOAD_DIR = path.join(HOME_DIR, "uploads")
@@ -10,30 +10,95 @@ UPLOAD_DIR = path.join(HOME_DIR, "uploads")
 api = Flask(__name__)
 bunny = BunnyHandler()
 
+def BuildHTTPResponse(
+        headers: dict = None,
+        status_code = 200, **kwargs
+    ):
+
+    type = kwargs.get("type")
+    message = kwargs.get("message")
+    message_name = kwargs.get("message_name")
+
+    route = kwargs.get("route")
+    method = kwargs.get("method")
+
+    object_data = kwargs.get("object_data")
+
+
+    resp = make_response()
+    resp.status_code = status_code
+
+    if headers is not None:
+        resp.headers = headers
+    else:
+        resp.headers.set("Content-Type", "application/json")
+        resp.headers.set("Server", "video")
+        resp.headers.set("Date", datetime.datetime.now())
+        
+    data = {
+        "type": type, # Response type
+
+        "message": message, # Response type message
+        "message_name": message_name, # Response data object name (internal)
+
+        "route": route, # Request route
+        "method": method, # Request method
+        
+        "object_data": object_data # Response data object
+    }
+
+    resp.set_data(
+        json.dumps(data, indent=4)
+    )
+
+    return resp
+
 @api.route("/status", methods=["GET"])
 def status():
     return f"Alive!"
 
 @api.route("/files/upload", methods=["POST"])
 def files_misc_upload_POST():
+    response_data = {
+        "type": None,
+
+        "message": None,
+        "message_name": None,
+
+        "route": "/files/upload",
+        "method": request.method,
+
+        "data": None
+    }
+
     local_file_path = request.headers.get("local-file-path")
     if local_file_path is None or local_file_path == "":
-        return make_response("Header \"local-file-path\" is not set or is set incorrectly.", 400)
+        response_data["type"] = "FAIL"
+        response_data["message"] = "The header \"local-file-path\" is not set or is set incorrectly"
+        response_data["message_name"] = "local_file_path_missing"
 
     target_file_path = request.headers.get("target-file-path")
     if target_file_path is None or target_file_path == "":
-        return make_response("Header \"target-file-path\" is not set or is set incorrectly.", 400)
+        response_data["type"] = "FAIL"
+        response_data["message"] = "The header \"local-file-path\" is not set or is set incorrectly"
+        response_data["message_name"] = "target_file_path_missing"
+
+    if response_data["type"] is not None:
+        return BuildHTTPResponse(**response_data, status_code=400)
     
     deleteLocal = request.headers.get("deleteLocal", False)
 
-    bunny.bunny_UploadFile(
+    response = bunny.bunny_UploadFile(
         local_file_path = local_file_path,
         target_file_path = target_file_path,
         content_type = "application/octet-stream",
         deleteLocal = deleteLocal
     )
 
-    return make_response("Success", 200)
+    for key in response.keys():
+        response_data[key] = response[key]
+
+    return BuildHTTPResponse(**response)
 
 @api.route("/files/list", methods=["GET"])
 def files_list():
