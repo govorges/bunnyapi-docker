@@ -102,13 +102,28 @@ def files_misc_upload_POST():
 
 @api.route("/files/list", methods=["GET"])
 def files_list():
-    path = request.headers.get("path", "videos/")
-    if path == "" or len(path) > 30:
-        return make_response("Header \"path\" is not set or is set incorrectly.", 400)
+    response_data = {
+        "type": None,
 
-    fileList = bunny.bunny_ListFiles(path)
+        "message": None,
+        "message_name": None,
 
-    return jsonify(fileList)
+        "route": "/files/list",
+        "method": request.method,
+
+        "data": None
+    }
+    path = request.headers.get("path")
+    if path is None or path == "":
+        response_data["type"] = "FAIL"
+        response_data["message"] = "Header \"path\" is not set or is set incorrectly."
+        response_data["message_name"] = "path_missing"
+
+        return make_response(**response_data, status_code=400)
+
+    file_list_response = bunny.bunny_ListFiles(path)
+
+    return BuildHTTPResponse(**file_list_response)
 
 @api.route("/files/delete", methods=["DELETE"])
 def files_delete():

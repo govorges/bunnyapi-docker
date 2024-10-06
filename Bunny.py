@@ -105,14 +105,44 @@ class BunnyHandler:
         return responseData
 
     def bunny_ListFiles(self, path: str):
+        responseData = {
+            "type": None,
+            "message": None,
+            "message_name": None,
+            "status_code": None,
+            "object": None
+        }
         requestHeaders = {
             "AccessKey": self.bunny_StorageZone_API_Key,
             "accept": "application/json"
         }
         requestURL = self.bunny_StorageZoneEndpoint + "/" + path
 
-        fileList = requests.get(requestURL, headers=requestHeaders).json()
-        return fileList
+        bunnyRequest = requests.get(requestURL, headers=requestHeaders)
+        if bunnyRequest.status_code == 200:
+            responseData["type"] = "SUCCESS"
+            responseData["message"] = "File list retrieved successfully."
+            responseData["message_name"] = "list_files_success"
+
+            file_list = bunnyRequest.json()
+            if len(file_list) == 0:
+                responseData["message"] = "File list retrieved successfully but the file list is empty."
+
+            responseData["object"] = file_list
+
+        elif bunnyRequest.status_code == 401:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "Invalid authorization, file list not retrieved."
+            responseData["message_name"] = "invalid_auth"
+
+        else:
+            responseData["type"] = "FAIL"
+            responseData["message"] = f"File list not retrieved ({bunnyRequest.status_code})"
+            responseData["message_name"] = "list_files_fail"
+
+        responseData["status_code"] = bunnyRequest.status_code
+
+        return responseData
 
     def bunny_DeleteFile(self, target_file_path):
         requestHeaders = {
