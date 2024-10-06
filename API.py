@@ -313,10 +313,28 @@ def Stream_updateVideo():
 
 @api.route("/stream/retrieve-video", methods=["GET"])
 def Stream_retrieveVideo():
+    response_data = {
+        "type": None,
+
+        "message": None,
+        "message_name": None,
+
+        "route": "/stream/retrieve-video",
+        "method": request.method,
+
+        "object": None
+    }
     video_guid = request.headers.get("guid")
     if video_guid is None or video_guid == "":
-        return make_response("Header \"guid\" was not set or was set incorrectly.", 400)
-    
-    videoData = bunny.bunny_RetrieveVideoInLibrary(video_guid)
+        response_data["type"] = "FAIL"
+        response_data["message"] = "Header \"guid\" was not set or was set incorrectly."
+        response_data["message_name"] = "video_guid_missing"
 
-    return jsonify(videoData)
+        return BuildHTTPResponse(**response_data)
+    
+    response = bunny.bunny_RetrieveVideoInLibrary(video_guid)
+
+    for key in response.keys():
+        response_data[key] = response[key]
+
+    return BuildHTTPResponse(**response_data)

@@ -345,6 +345,13 @@ class BunnyHandler:
         return responseData
 
     def bunny_RetrieveVideoInLibrary(self, guid: str):
+        responseData = {
+            "type": None,
+            "message": None,
+            "message_name": None,
+            "status_code": None
+        }
+
         requestHeaders = {
             "AccessKey": self.bunny_StreamLibrary_Key,
             "Content-Type": "application/json",
@@ -352,5 +359,29 @@ class BunnyHandler:
         }
         requestURL = f"https://video.bunnycdn.com/library/{self.bunny_StreamLibrary_ID}/videos/{guid}"
 
-        r = requests.get(requestURL, headers=requestHeaders)
-        return r.json()
+        bunnyRequest = requests.get(requestURL, headers=requestHeaders)
+
+        if bunnyRequest.status_code == 200:
+            responseData["type"] = "SUCCESS"
+            responseData["message"] = "Video retrieved successfully"
+            responseData["message_name"] = "video_retrieve_success"
+            responseData["object"] = bunnyRequest.json()
+
+        elif bunnyRequest.status_code == 401:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "Invalid authorization"
+            responseData["message_name"] = "invalid_auth"
+
+        elif bunnyRequest.status_code == 404:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "Video not found" 
+            responseData["message_name"] = "video_not_found"
+
+        else:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "Video not retrieved."
+            responseData["message_name"] = "video_retrieve_fail"
+            
+        responseData["status_code"] = bunnyRequest.status_code
+
+        return responseData
