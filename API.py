@@ -68,7 +68,7 @@ def files_misc_upload_POST():
         "route": "/files/upload",
         "method": request.method,
 
-        "data": None
+        "object": None
     }
 
     local_file_path = request.headers.get("local-file-path")
@@ -98,7 +98,7 @@ def files_misc_upload_POST():
     for key in response.keys():
         response_data[key] = response[key]
 
-    return BuildHTTPResponse(**response)
+    return BuildHTTPResponse(**response_data)
 
 @api.route("/files/list", methods=["GET"])
 def files_list():
@@ -111,7 +111,7 @@ def files_list():
         "route": "/files/list",
         "method": request.method,
 
-        "data": None
+        "object": None
     }
     path = request.headers.get("path")
     if path is None or path == "":
@@ -121,19 +121,40 @@ def files_list():
 
         return make_response(**response_data, status_code=400)
 
-    file_list_response = bunny.bunny_ListFiles(path)
+    response = bunny.bunny_ListFiles(path)
 
-    return BuildHTTPResponse(**file_list_response)
+    for key in response.keys():
+        response_data[key] = response[key]
+
+    return BuildHTTPResponse(**response_data)
 
 @api.route("/files/delete", methods=["DELETE"])
 def files_delete():
+    response_data = {
+        "type": None,
+
+        "message": None,
+        "message_name": None,
+
+        "route": "/files/delete",
+        "method": request.method,
+
+        "object": None
+    }
     target_file_path = request.headers.get("target-file-path")
-    if target_file_path is None or target_file_path == "" or len(target_file_path) > 100:
-        return make_response("Header \"target_file_path\" is not set or is set incorrectly.", 400)
+    if target_file_path is None or target_file_path == "":
+        response_data["type"] = "FAIL"
+        response_data["message"] = "Header \"target_file_path\" is not set or is set incorrectly."
+        response_data["message_name"] = "target_file_path_missing"
 
-    bunny.bunny_DeleteFile(target_file_path=target_file_path)
+        return BuildHTTPResponse(**response_data, status_code=400)
 
-    return make_response("Success", 200)
+    response = bunny.bunny_DeleteFile(target_file_path=target_file_path)
+
+    for key in response.keys():
+        response_data[key] = response[key]
+
+    return BuildHTTPResponse(**response_data)
 
 @api.route("/files/retrieve_metadata", methods=["GET"])
 def files_retrieve():

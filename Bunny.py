@@ -145,6 +145,13 @@ class BunnyHandler:
         return responseData
 
     def bunny_DeleteFile(self, target_file_path):
+        responseData = {
+            "type": None,
+            "message": None,
+            "message_name": None,
+            "status_code": None
+        }
+
         requestHeaders = {
             "AccessKey": self.bunny_StorageZone_API_Key,
             "accept": "application/json"
@@ -155,7 +162,20 @@ class BunnyHandler:
 
         requestURL = self.bunny_StorageZoneEndpoint + target_file_path
 
-        requests.delete(requestURL, headers=requestHeaders)
+        bunnyRequest = requests.delete(requestURL, headers=requestHeaders)
+        if bunnyRequest.status_code == 200:
+            responseData["type"] == "SUCCESS"
+            responseData["message"] = "File deletion succeeded."
+            responseData["message_name"] = "file_deletion_success"
+            
+        else:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "File deletion failed."
+            responseData["message_name"] = "file_deletion_failed"
+
+        responseData["status_code"] = bunnyRequest.status_code
+        
+        return responseData
 
     def bunny_PurgeLinkCache(self, url):
         requestHeaders = {
