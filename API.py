@@ -80,7 +80,7 @@ def files_misc_upload_POST():
     target_file_path = request.headers.get("target-file-path")
     if target_file_path is None or target_file_path == "":
         response_data["type"] = "FAIL"
-        response_data["message"] = "The header \"local-file-path\" is not set or is set incorrectly"
+        response_data["message"] = "The header \"target-file-path\" is not set or is set incorrectly"
         response_data["message_name"] = "target_file_path_missing"
 
     if response_data["type"] is not None:
