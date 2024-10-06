@@ -277,17 +277,39 @@ def Stream_createVideo():
 
 @api.route("/stream/update-video", methods=["POST"])
 def Stream_updateVideo():
+    response_data = {
+        "type": None,
+
+        "message": None,
+        "message_name": None,
+
+        "route": "/stream/update-video",
+        "method": request.method,
+
+        "object": None
+    }
+
     video_guid = request.headers.get("guid")
     if video_guid is None or video_guid == "":
-        return make_response("Header \"guid\" was not set or was set incorrectly.", 400)
+        response_data["type"] = "FAIL"
+        response_data["message"] = "Header \"guid\" is not set or is set incorrectly."
+        response_data["message_name"] = "video_guid_missing"
     
     payload = request.json
     if payload is None or payload == "":
-        return make_response("JSON payload was not set or was set incorrectly.", 400)
-    
-    r = bunny.bunny_UpdateVideoInLibrary(guid=video_guid, payload=payload)
+        response_data["type"] = "FAIL"
+        response_data["message"] = "JSON payload is not set or is set incorrectly."
+        response_data["message_name"] = "video_payload_missing"
 
-    return make_response(r.text, 200)
+    if response_data["type"] == "FAIL":
+        return BuildHTTPResponse(response_data, status_code=400)
+    
+    response = bunny.bunny_UpdateVideoInLibrary(guid=video_guid, payload=payload)
+
+    for key in response.keys():
+        response_data[key] = response[key]
+
+    return BuildHTTPResponse(**response_data)
 
 @api.route("/stream/retrieve-video", methods=["GET"])
 def Stream_retrieveVideo():

@@ -299,6 +299,13 @@ class BunnyHandler:
         return (signature.hexdigest(), signature_expiration_time, signature_library_id)
     
     def bunny_UpdateVideoInLibrary(self, guid: str, payload: dict):
+        responseData = {
+            "type": None,
+            "message": None,
+            "message_name": None,
+            "status_code": None
+        }
+
         validPayloadKeys = ['title', 'collectionId', 'chapters', 'moments', 'metaTags']
 
         requestPayload = {}
@@ -315,9 +322,27 @@ class BunnyHandler:
             "Accept": "application/json"
         }
 
-        r = requests.post(requestURL, json=requestPayload, headers=requestHeaders)
+        bunnyRequest = requests.post(requestURL, json=requestPayload, headers=requestHeaders)
+        
+        if bunnyRequest.status_code == 200:
+            responseData["type"] = "SUCCESS"
+            responseData["message"] = "Video updated successfully."
+            responseData["message_name"] = "video_update_success"
+        elif bunnyRequest.status_code == 401:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "Invalid authorization."
+            responseData["message_name"] = "invalid_auth"
+        elif bunnyRequest.status_code == 404:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "Video not found."
+            responseData["message_name"] = "video_not_found"
+        else:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "Video not updated."
+            responseData["message_name"] = "video_update_fail"
+        responseData["status_code"] = bunnyRequest.status_code
 
-        return r
+        return responseData
 
     def bunny_RetrieveVideoInLibrary(self, guid: str):
         requestHeaders = {
