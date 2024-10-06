@@ -248,12 +248,32 @@ def upload_createSignature():
 
 @api.route("/stream/create-video", methods=["GET"])
 def Stream_createVideo():
+    response_data = {
+        "type": None,
+
+        "message": None,
+        "message_name": None,
+
+        "route": "/stream/create-video",
+        "method": request.method,
+
+        "object": None
+    }
+
     videoTitle = request.headers.get("title")
     if videoTitle is None or videoTitle == "":
-        return make_response("Header \"title\" was not set or was set incorrectly.", 400)
+        response_data["type"] = "FAIL"
+        response_data["message"] = "Header \"title\" is not set or is set incorrectly."
+        response_data["message_name"] = "video_title_missing"
+
+        return BuildHTTPResponse(**response_data, status_code=400)
     
-    video = bunny.bunny_CreateVideoInLibrary(title=videoTitle)
-    return video
+    response = bunny.bunny_CreateVideoInLibrary(title=videoTitle)
+
+    for key in response.keys():
+        response_data[key] = response[key]
+
+    return BuildHTTPResponse(**response_data)
 
 @api.route("/stream/update-video", methods=["POST"])
 def Stream_updateVideo():

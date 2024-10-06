@@ -252,6 +252,13 @@ class BunnyHandler:
         return responseData
     
     def bunny_CreateVideoInLibrary(self, title: str):
+        responseData = {
+            "type": None,
+            "message": None,
+            "message_name": None,
+            "status_code": None
+        }
+
         requestHeaders = {
             "AccessKey": self.bunny_StreamLibrary_Key,
             "Content-Type": "application/json",
@@ -262,8 +269,26 @@ class BunnyHandler:
         }
         requestURL = f"https://video.bunnycdn.com/library/{self.bunny_StreamLibrary_ID}/videos"
 
-        resp = requests.post(requestURL, headers=requestHeaders, json=requestData)
-        return resp.json()
+        bunnyRequest = requests.post(requestURL, headers=requestHeaders, json=requestData)
+        if bunnyRequest.status_code == 200:
+            responseData["type"] = "SUCCESS"
+            responseData["message"] = "Video created successfully."
+            responseData["message_name"] = "video_creation_success"
+
+            responseData["object"] = bunnyRequest.json()
+
+        elif bunnyRequest.status_code == 401:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "Invalid authorization."
+            responseData["message_name"] = "invalid_auth"
+
+        else:
+            responseData["type"] = "FAIL"
+            responseData["message"] = "Video not created."
+            responseData["message_name"] = "video_creation_fail"
+        responseData["status_code"] = bunnyRequest.status_code
+
+        return responseData
     
     def bunny_GenerateTUSSignature(self, videoID):
         '''Generates a pre-signed authentication signature for TUS (resumable uploads) used by Bunny's Stream API.'''
