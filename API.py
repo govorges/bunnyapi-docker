@@ -22,7 +22,7 @@ def BuildHTTPResponse(
     route = kwargs.get("route")
     method = kwargs.get("method")
 
-    object_data = kwargs.get("object_data")
+    object = kwargs.get("object")
 
 
     resp = make_response()
@@ -32,7 +32,7 @@ def BuildHTTPResponse(
         resp.headers = headers
     else:
         resp.headers.set("Content-Type", "application/json")
-        resp.headers.set("Server", "video")
+        resp.headers.set("Server", "bunnyapi")
         resp.headers.set("Date", datetime.datetime.now())
         
     data = {
@@ -44,7 +44,7 @@ def BuildHTTPResponse(
         "route": route, # Request route
         "method": method, # Request method
         
-        "object_data": object_data # Response data object
+        "object": object # Response data object
     }
 
     resp.set_data(
