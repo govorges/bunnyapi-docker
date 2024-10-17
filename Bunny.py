@@ -32,7 +32,7 @@ class BunnyHandler:
         else:
             return False
 
-    def bunny_UploadFile(self, local_file_path, target_file_path, content_type = "application/octet-stream", purge = True, deleteLocal = False):
+    def bunny_UploadFile(self, local_file_path, target_file_path, content_type = "application/octet-stream", purge = True, deleteLocal = True):
         responseData = {
             "type": None,
             "message": None,
