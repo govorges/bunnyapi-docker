@@ -86,7 +86,9 @@ def files_misc_upload_POST():
     if response_data["type"] is not None:
         return BuildHTTPResponse(**response_data, status_code=400)
     
-    deleteLocal = request.headers.get("deleteLocal", True)
+    deleteLocal = request.headers.get("deleteLocal", "true")
+    if deleteLocal.lower() == "true": deleteLocal = True
+    if deleteLocal.lower() == "false": deleteLocal = False
 
     response = bunny.bunny_UploadFile(
         local_file_path = local_file_path,
