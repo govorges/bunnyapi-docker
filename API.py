@@ -338,3 +338,52 @@ def Stream_retrieveVideo():
         response_data[key] = response[key]
 
     return BuildHTTPResponse(**response_data)
+
+@api.route("/stream/delete-video", methods=["POST"])
+def Stream_deleteVideo():
+    response_data = {
+        "type": None,
+
+        "message": None,
+        "message_name": None,
+
+        "route": "/stream/delete-video",
+        "method": request.method,
+
+        "object": None
+    }
+    video_guid = request.headers.get("guid")
+    if video_guid is None or video_guid == "":
+        response_data["type"] = "FAIL"
+        response_data["message"] = "Header \"guid\" was not set or was set incorrectly."
+        response_data["message_name"] = "video_guid_missing"
+
+        return BuildHTTPResponse(**response_data)
+    
+    response = bunny.bunny_DeleteVideoInLibrary(video_guid)
+
+    for key in response.keys():
+        response_data[key] = response[key]
+
+    return BuildHTTPResponse(**response_data)
+
+@api.route("/stream/videos", methods=["GET"])
+def Stream_listVideos():
+    response_data = {
+        "type": None,
+
+        "message": None,
+        "message_name": None,
+
+        "route": "/stream/videos",
+        "method": request.method,
+
+        "object": None
+    }
+    libraryId = request.headers.get("libraryId", None)
+    response = bunny.bunny_ListVideosInLibrary(libraryId)
+
+    for key in response.keys():
+        response_data[key] = response[key]
+
+    return BuildHTTPResponse(**response_data)
